@@ -1,0 +1,10 @@
+[
+    {
+        "producerName": "Juan Perez",
+        "weightQuintals": 5.5,
+        "qualityGrade": "A",
+        "pricePerQuintal": 120,
+        "amountPayable": 660,
+        "date": "04\/09\/2026"
+    }
+]

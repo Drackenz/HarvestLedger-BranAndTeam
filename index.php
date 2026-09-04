@@ -1,22 +1,29 @@
 <?php
-session_start();
 require_once __DIR__ . '/Models/Delivery.php';
 require_once __DIR__ . '/includes/DeliveryService.php';
 require_once __DIR__ . '/includes/validation.php';
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 $deliveryService = new DeliveryService();
 $errors = [];
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['addDelivery'])) {
-    $producerName = $_POST['producerName'];
+    $producerName = trim($_POST['producerName']);
     $weight = $_POST['weightQuintals'];
     $qualityGrade = $_POST['qualityGrade'];
     $pricePerQuintal = $_POST['pricePerQuintal'];
+    $today = date("d/m/Y");
 
     $errors = validateDeliveryInput($producerName, $weight, $qualityGrade, $pricePerQuintal);
 
+    if (count($errors) == 0 && $deliveryService->isDuplicate($producerName, $today)) {
+        $errors[] = "This producer already has a delivery registered today.";
+    }
+
     if (count($errors) == 0) {
-        $newDelivery = new Delivery($producerName, (float)$weight, $qualityGrade, (float)$pricePerQuintal, date("d/m/Y"));
+        $newDelivery = new Delivery($producerName, (float)$weight, $qualityGrade, (float)$pricePerQuintal, $today);
         $deliveryService->addDelivery($newDelivery);
     }
 }
@@ -25,7 +32,22 @@ if (isset($_POST['clearSession'])) {
     $deliveryService->clearDeliveries();
 }
 
-$deliveries = $deliveryService->getAllDeliveries();
+if (isset($_GET['deleteId'])) {
+    $deliveryService->deleteDelivery((int)$_GET['deleteId']);
+    header("Location: index.php");
+    exit;
+}
+
+$searchTerm = isset($_GET['search']) ? trim($_GET['search']) : '';
+$allDeliveries = $deliveryService->getAllDeliveries();
+
+if ($searchTerm != '') {
+    $deliveries = array_filter($allDeliveries, function ($delivery) use ($searchTerm) {
+        return stripos($delivery->producerName, $searchTerm) !== false;
+    });
+} else {
+    $deliveries = $allDeliveries;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">

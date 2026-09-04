@@ -1,6 +1,9 @@
 <?php
-session_start();
 require_once __DIR__ . '/../Models/Delivery.php';
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 $deliveries = $_SESSION['deliveries'] ?? [];
 $id = $_GET['id'] ?? null;

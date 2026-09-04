@@ -22,6 +22,10 @@ function validateDeliveryInput($producerName, $weight, $qualityGrade, $pricePerQ
     if (!is_numeric($pricePerQuintal) || $pricePerQuintal <= 0) {
         $errors[] = "Price per quintal must be a positive number.";
     }
+    
+    if (strlen($producerName) > 100) {
+    $errors[] = "Producer name must be under 100 characters.";
+}
 
     return $errors;
 }
